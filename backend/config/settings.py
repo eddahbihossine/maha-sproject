@@ -6,8 +6,17 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
+import dj_database_url
 
 load_dotenv()
+
+
+def _split_env_list(name: str, default: str = '') -> list[str]:
+    return [
+        item.strip()
+        for item in os.getenv(name, default).split(',')
+        if item.strip()
+    ]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,7 +27,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-xap2p!1_4-fj-fu^c(atrnr#=p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+_vercel_url = os.getenv('VERCEL_URL')  # e.g. "my-app.vercel.app" (no scheme)
+
+_allowed_hosts = set(_split_env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1'))
+if _vercel_url:
+    _allowed_hosts.add(_vercel_url)
+ALLOWED_HOSTS = sorted(_allowed_hosts)
 
 # Application definition
 INSTALLED_APPS = [
@@ -74,12 +88,22 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+_database_url = os.getenv('DATABASE_URL', '').strip()
+if _database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            _database_url,
+            conn_max_age=600,
+            ssl_require=not DEBUG,
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -143,12 +167,28 @@ SIMPLE_JWT = {
 }
 
 # CORS Settings
-CORS_ALLOWED_ORIGINS = os.getenv(
-    'CORS_ALLOWED_ORIGINS',
-    'http://localhost:3000,http://127.0.0.1:3000'
-).split(',')
+_cors_allowed_origins = set(
+    _split_env_list(
+        'CORS_ALLOWED_ORIGINS',
+        'http://localhost:3000,http://127.0.0.1:3000'
+    )
+)
+if _vercel_url:
+    _cors_allowed_origins.add(f'https://{_vercel_url}')
+CORS_ALLOWED_ORIGINS = sorted(_cors_allowed_origins)
 
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF
+_csrf_trusted_origins = set(
+    _split_env_list(
+        'CSRF_TRUSTED_ORIGINS',
+        'http://localhost:3000,http://127.0.0.1:3000'
+    )
+)
+if _vercel_url:
+    _csrf_trusted_origins.add(f'https://{_vercel_url}')
+CSRF_TRUSTED_ORIGINS = sorted(_csrf_trusted_origins)
 
 # Supabase Configuration
 SUPABASE_URL = os.getenv('SUPABASE_URL', '')
