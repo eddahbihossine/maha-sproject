@@ -11,8 +11,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { GraduationCap, Loader2 } from 'lucide-react'
+import { useT } from '@/lib/i18n/use-t'
 
 export default function RegisterPage() {
+  const t = useT()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -31,13 +33,13 @@ export default function RegisterPage() {
     setSuccess(false)
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
+      setError(t('auth.passwordsNoMatch'))
       setLoading(false)
       return
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters')
+      setError(t('auth.passwordTooShort'))
       setLoading(false)
       return
     }
@@ -92,21 +94,21 @@ export default function RegisterPage() {
             <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
               <GraduationCap className="h-6 w-6 text-primary-foreground" />
             </div>
-            <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
+            <CardTitle className="text-2xl font-bold">{t('auth.checkEmail')}</CardTitle>
             <CardDescription>
-              We've sent you a confirmation link to {email}
+              {t('auth.confirmEmailSent', { email })}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Alert>
               <AlertDescription>
-                Please check your email and click the confirmation link to activate your account.
+                {t('auth.confirmEmailHelp')}
               </AlertDescription>
             </Alert>
           </CardContent>
           <CardFooter>
             <Button className="w-full" asChild>
-              <Link href="/login">Go to login</Link>
+              <Link href="/login">{t('auth.goToLogin')}</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -121,10 +123,8 @@ export default function RegisterPage() {
           <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
             <GraduationCap className="h-6 w-6 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-          <CardDescription>
-            Join Semsari to find your perfect student home
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold">{t('auth.createAccount')}</CardTitle>
+          <CardDescription>{t('auth.registerSubtitle')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
@@ -134,25 +134,25 @@ export default function RegisterPage() {
           )}
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
-              <Label>I am a...</Label>
+              <Label>{t('auth.iAmA')}</Label>
               <RadioGroup value={role} onValueChange={(value) => setRole(value as 'student' | 'owner')}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="student" id="student" />
                   <Label htmlFor="student" className="font-normal cursor-pointer">
-                    Student looking for accommodation
+                    {t('auth.roleStudent')}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="owner" id="owner" />
                   <Label htmlFor="owner" className="font-normal cursor-pointer">
-                    Property owner/landlord
+                    {t('auth.roleOwner')}
                   </Label>
                 </div>
               </RadioGroup>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First name</Label>
+                <Label htmlFor="firstName">{t('auth.firstName')}</Label>
                 <Input
                   id="firstName"
                   value={firstName}
@@ -162,7 +162,7 @@ export default function RegisterPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last name</Label>
+                <Label htmlFor="lastName">{t('auth.lastName')}</Label>
                 <Input
                   id="lastName"
                   value={lastName}
@@ -173,11 +173,11 @@ export default function RegisterPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -185,7 +185,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -196,7 +196,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm password</Label>
+              <Label htmlFor="confirmPassword">{t('auth.confirmPassword')}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -208,15 +208,15 @@ export default function RegisterPage() {
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create account
+              {t('auth.createAccountCta')}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
+            {t('auth.alreadyHaveAccount')}{' '}
             <Link href="/login" className="text-primary hover:underline">
-              Sign in
+              {t('auth.signIn')}
             </Link>
           </div>
         </CardFooter>

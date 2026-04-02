@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge'
 import { SlidersHorizontal, X, Search, MapPin } from 'lucide-react'
 import type { SearchFilters as SearchFiltersType } from '@/lib/types'
 import { popularCities, amenitiesList, universities } from '@/lib/mock-data'
+import { useT } from '@/lib/i18n/use-t'
 
 interface SearchFiltersProps {
   filters: SearchFiltersType
@@ -38,23 +39,29 @@ interface SearchFiltersProps {
   resultCount?: number
 }
 
-const propertyTypes = [
-  { value: 'studio', label: 'Studio' },
-  { value: 'apartment', label: 'Apartment' },
-  { value: 'room', label: 'Room' },
-  { value: 'shared', label: 'Shared' },
-  { value: 'residence', label: 'Residence' },
-]
-
-const bedroomOptions = [
-  { value: '1', label: '1 bedroom' },
-  { value: '2', label: '2 bedrooms' },
-  { value: '3', label: '3+ bedrooms' },
-]
-
 export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchFiltersProps) {
+  const t = useT()
   const [isOpen, setIsOpen] = useState(false)
   const [localFilters, setLocalFilters] = useState<SearchFiltersType>(filters)
+
+  const propertyTypes = [
+    { value: 'studio', label: t('search.filters.propertyTypeStudio') },
+    { value: 'apartment', label: t('search.filters.propertyTypeApartment') },
+    { value: 'room', label: t('search.filters.propertyTypeRoom') },
+    { value: 'shared', label: t('search.filters.propertyTypeShared') },
+    { value: 'residence', label: t('search.filters.propertyTypeResidence') },
+  ]
+
+  const propertyTypeLabelByValue = (value: string) => {
+    const match = propertyTypes.find((p) => p.value === value)
+    return match?.label ?? value
+  }
+
+  const bedroomOptions = [
+    { value: 1, label: t('search.filters.bedroom1') },
+    { value: 2, label: t('search.filters.bedroom2') },
+    { value: 3, label: t('search.filters.bedroom3Plus') },
+  ]
 
   const updateLocalFilter = <K extends keyof SearchFiltersType>(
     key: K,
@@ -101,7 +108,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by title, description..."
+            placeholder={t('search.filters.searchPlaceholder')}
             value={filters.query || ''}
             onChange={(e) => onFiltersChange({ ...filters, query: e.target.value || undefined })}
             className="pl-10"
@@ -116,10 +123,10 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
             }
           >
             <SelectTrigger className="pl-10">
-              <SelectValue placeholder="City" />
+              <SelectValue placeholder={t('search.filters.city')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Cities</SelectItem>
+              <SelectItem value="all">{t('search.filters.allCities')}</SelectItem>
               {popularCities.map((city) => (
                 <SelectItem key={city.name} value={city.name}>
                   {city.name}
@@ -132,7 +139,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
           <SheetTrigger asChild>
             <Button variant="outline" className="gap-2 bg-transparent">
               <SlidersHorizontal className="h-4 w-4" />
-              Filters
+              {t('search.filters.button')}
               {activeFilterCount > 0 && (
                 <Badge variant="secondary" className="ml-1">
                   {activeFilterCount}
@@ -142,18 +149,18 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
           </SheetTrigger>
           <SheetContent className="w-full overflow-y-auto sm:max-w-md">
             <SheetHeader>
-              <SheetTitle>Filters</SheetTitle>
+              <SheetTitle>{t('search.filters.title')}</SheetTitle>
             </SheetHeader>
             <div className="mt-6 space-y-6">
               <Accordion type="multiple" defaultValue={['price', 'property', 'rooms']}>
                 {/* Price Range */}
                 <AccordionItem value="price">
-                  <AccordionTrigger>Price Range</AccordionTrigger>
+                  <AccordionTrigger>{t('search.filters.priceRange')}</AccordionTrigger>
                   <AccordionContent className="space-y-4 pt-4">
                     <div className="flex items-center gap-4">
                       <div className="flex-1">
                         <Label htmlFor="minRent" className="text-xs text-muted-foreground">
-                          Min (MAD)
+                          {t('search.filters.minMad')}
                         </Label>
                         <Input
                           id="minRent"
@@ -170,7 +177,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
                       </div>
                       <div className="flex-1">
                         <Label htmlFor="maxRent" className="text-xs text-muted-foreground">
-                          Max (MAD)
+                          {t('search.filters.maxMad')}
                         </Label>
                         <Input
                           id="maxRent"
@@ -201,7 +208,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
 
                 {/* Property Type */}
                 <AccordionItem value="property">
-                  <AccordionTrigger>Property Type</AccordionTrigger>
+                  <AccordionTrigger>{t('search.filters.propertyType')}</AccordionTrigger>
                   <AccordionContent className="pt-4">
                     <div className="flex flex-wrap gap-2">
                       {propertyTypes.map((type) => (
@@ -224,10 +231,10 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
 
                 {/* Rooms & Size */}
                 <AccordionItem value="rooms">
-                  <AccordionTrigger>Rooms & Size</AccordionTrigger>
+                  <AccordionTrigger>{t('search.filters.roomsSize')}</AccordionTrigger>
                   <AccordionContent className="space-y-4 pt-4">
                     <div>
-                      <Label className="text-sm font-medium">Bedrooms</Label>
+                      <Label className="text-sm font-medium">{t('search.filters.bedrooms')}</Label>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {bedroomOptions.map((option) => (
                           <Button
@@ -255,7 +262,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
                     <div className="flex items-center gap-4">
                       <div className="flex-1">
                         <Label htmlFor="minSurface" className="text-xs text-muted-foreground">
-                          Min m2
+                          {t('search.filters.minM2')}
                         </Label>
                         <Input
                           id="minSurface"
@@ -272,7 +279,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
                       </div>
                       <div className="flex-1">
                         <Label htmlFor="maxSurface" className="text-xs text-muted-foreground">
-                          Max m2
+                          {t('search.filters.maxM2')}
                         </Label>
                         <Input
                           id="maxSurface"
@@ -293,7 +300,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
 
                 {/* Amenities */}
                 <AccordionItem value="amenities">
-                  <AccordionTrigger>Amenities</AccordionTrigger>
+                  <AccordionTrigger>{t('search.filters.amenities')}</AccordionTrigger>
                   <AccordionContent className="pt-4">
                     <div className="grid grid-cols-2 gap-3">
                       {amenitiesList.slice(0, 10).map((amenity) => (
@@ -314,7 +321,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
 
                 {/* University */}
                 <AccordionItem value="university">
-                  <AccordionTrigger>Near University</AccordionTrigger>
+                  <AccordionTrigger>{t('search.filters.nearUniversity')}</AccordionTrigger>
                   <AccordionContent className="pt-4">
                     <Select
                       value={localFilters.nearUniversity || ''}
@@ -323,7 +330,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select university" />
+                        <SelectValue placeholder={t('search.filters.selectUniversity')} />
                       </SelectTrigger>
                       <SelectContent>
                         {universities.map((uni) => (
@@ -338,7 +345,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
 
                 {/* Other Options */}
                 <AccordionItem value="other">
-                  <AccordionTrigger>Other Options</AccordionTrigger>
+                  <AccordionTrigger>{t('search.filters.otherOptions')}</AccordionTrigger>
                   <AccordionContent className="space-y-3 pt-4">
                     <div className="flex items-center space-x-2">
                       <Checkbox
@@ -349,7 +356,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
                         }
                       />
                       <Label htmlFor="furnished" className="text-sm font-normal">
-                        Furnished only
+                        {t('search.filters.furnishedOnly')}
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -361,12 +368,12 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
                         }
                       />
                       <Label htmlFor="verified" className="text-sm font-normal">
-                        Verified listings only
+                        {t('search.filters.verifiedOnly')}
                       </Label>
                     </div>
                     <div>
                       <Label htmlFor="availableFrom" className="text-sm font-normal">
-                        Available from
+                        {t('search.filters.availableFrom')}
                       </Label>
                       <Input
                         id="availableFrom"
@@ -385,10 +392,12 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
             <SheetFooter className="mt-6 flex gap-2">
               <Button variant="outline" onClick={resetFilters} className="flex-1 bg-transparent">
                 <X className="mr-2 h-4 w-4" />
-                Reset
+                {t('search.filters.reset')}
               </Button>
               <Button onClick={applyFilters} className="flex-1">
-                Show {resultCount !== undefined ? `${resultCount} results` : 'results'}
+                {resultCount !== undefined
+                  ? t('search.filters.showResults', { count: resultCount })
+                  : t('search.filters.showResultsFallback')}
               </Button>
             </SheetFooter>
           </SheetContent>
@@ -398,7 +407,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
       {/* Active Filters */}
       {activeFilterCount > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">Active filters:</span>
+          <span className="text-sm text-muted-foreground">{t('search.filters.activeFilters')}</span>
           {filters.city && (
             <Badge variant="secondary" className="gap-1">
               {filters.city}
@@ -412,7 +421,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
           )}
           {filters.propertyType?.map((type) => (
             <Badge key={type} variant="secondary" className="gap-1">
-              {type}
+              {propertyTypeLabelByValue(type)}
               <button
                 onClick={() =>
                   onFiltersChange({
@@ -441,7 +450,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
           )}
           {filters.verified && (
             <Badge variant="secondary" className="gap-1">
-              Verified
+              {t('search.filters.verified')}
               <button
                 onClick={() => onFiltersChange({ ...filters, verified: undefined })}
                 className="ml-1 hover:text-destructive"
@@ -456,7 +465,7 @@ export function SearchFilters({ filters, onFiltersChange, resultCount }: SearchF
             onClick={resetFilters}
             className="h-6 px-2 text-xs"
           >
-            Clear all
+            {t('search.filters.clearAll')}
           </Button>
         </div>
       )}

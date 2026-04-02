@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getConversations } from "@/lib/api/messages";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useT } from "@/lib/i18n/use-t";
 
 export default function MessagesLayout({
   children,
@@ -33,6 +34,7 @@ export default function MessagesLayout({
 }) {
   const pathname = usePathname();
   const { user } = useAuth();
+  const t = useT();
   const [conversations, setConversations] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "unread" | "archived">("all");
@@ -85,7 +87,7 @@ export default function MessagesLayout({
           </Link>
           <div className="ml-auto flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/search">Browse Listings</Link>
+              <Link href="/search">{t('home.browseListings')}</Link>
             </Button>
           </div>
         </div>
@@ -102,9 +104,9 @@ export default function MessagesLayout({
           {/* Sidebar Header */}
           <div className="p-4 border-b space-y-4">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-semibold">Messages</h1>
+              <h1 className="text-xl font-semibold">{t('messages.title')}</h1>
               <Badge variant="secondary">
-                {totalUnread} unread
+                {t('messages.unreadCount', { count: totalUnread })}
               </Badge>
             </div>
 
@@ -112,7 +114,7 @@ export default function MessagesLayout({
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search conversations..."
+                placeholder={t('messages.searchConversations')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -129,7 +131,11 @@ export default function MessagesLayout({
                   onClick={() => setFilter(f)}
                   className="capitalize"
                 >
-                  {f}
+                  {f === 'all'
+                    ? t('messages.filterAll')
+                    : f === 'unread'
+                      ? t('messages.filterUnread')
+                      : t('messages.filterArchived')}
                 </Button>
               ))}
             </div>
@@ -140,13 +146,13 @@ export default function MessagesLayout({
             {filteredConversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
                 <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="font-medium">No conversations</h3>
+                <h3 className="font-medium">{t('messages.noConversationsTitle')}</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   {filter === "unread"
-                    ? "You've read all your messages"
+                    ? t('messages.noConversationsUnread')
                     : filter === "archived"
-                      ? "No archived conversations"
-                      : "Start a conversation by contacting a property owner"}
+                      ? t('messages.noConversationsArchived')
+                      : t('messages.noConversationsDefault')}
                 </p>
               </div>
             ) : (
@@ -167,7 +173,7 @@ export default function MessagesLayout({
                       <div className="relative">
                         <Avatar className="h-12 w-12">
                           <AvatarFallback>
-                            {(conversation.other_user_name || "User")
+                            {(conversation.other_user_name || t('messages.userFallback'))
                               .split(" ")
                               .map((part: string) => part[0])
                               .slice(0, 2)
@@ -180,7 +186,7 @@ export default function MessagesLayout({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-medium truncate">
-                            {conversation.other_user_name || "User"}
+                            {conversation.other_user_name || t('messages.userFallback')}
                           </span>
                           <span className="text-xs text-muted-foreground whitespace-nowrap">
                             {conversation.last_message_time

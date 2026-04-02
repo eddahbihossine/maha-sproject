@@ -12,10 +12,12 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MessageSquare, Loader2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { useT } from '@/lib/i18n/use-t'
 
 export default function MessagesPage() {
   const { user } = useAuth()
   const router = useRouter()
+  const t = useT()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -74,12 +76,12 @@ export default function MessagesPage() {
         <div className="rounded-full bg-muted p-6 mb-6">
           <MessageSquare className="h-12 w-12 text-muted-foreground" />
         </div>
-        <h2 className="text-2xl font-semibold mb-2">No messages yet</h2>
+        <h2 className="text-2xl font-semibold mb-2">{t('messages.emptyTitle')}</h2>
         <p className="text-muted-foreground max-w-sm mb-6">
-          Start a conversation with property owners by visiting a listing and clicking "Contact Owner"
+          {t('messages.emptyText', { contact: t('listings.contactOwner') })}
         </p>
         <Button onClick={() => router.push('/search')}>
-          Browse Listings
+          {t('home.browseListings')}
         </Button>
       </div>
     )
@@ -114,7 +116,7 @@ export default function MessagesPage() {
               
               {conversation.listing_title && (
                 <p className="text-xs text-muted-foreground mb-1 truncate">
-                  Re: {conversation.listing_title}
+                  {t('messages.regarding', { title: conversation.listing_title })}
                 </p>
               )}
               

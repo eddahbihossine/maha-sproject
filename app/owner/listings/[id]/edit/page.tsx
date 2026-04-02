@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/AuthProvider'
 import { apiFetchJson } from '@/lib/api/http'
-import { uploadListingImage } from '@/lib/supabase/storage'
+import { getListingImagesBucketName, uploadListingImage } from '@/lib/supabase/storage'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,6 +21,7 @@ export default function EditListingPage() {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const listingId = params.id as string
+  const bucketName = getListingImagesBucketName()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -182,7 +183,7 @@ export default function EditListingPage() {
               console.warn('Storage bucket not found - images cannot be uploaded')
             } else if (errMsg.includes('RLS policies')) {
               console.warn('Storage bucket RLS policies block uploads - please configure permissions')
-              alert('Storage bucket needs permission setup. Go to Supabase → Storage → listing-images → Policies and allow authenticated uploads.')
+              alert(`Storage bucket needs permission setup. Go to Supabase → Storage → ${bucketName} → Policies and allow authenticated uploads.`)
             } else {
               console.error(`Failed to upload image ${i}:`, err)
             }
@@ -208,7 +209,9 @@ export default function EditListingPage() {
       setUploading(false)
       
       if (bucketNotFound) {
-        console.warn('Listing updated but image uploads failed - storage bucket not configured')
+        alert(
+          `Listing updated! Image uploads failed because the Supabase Storage bucket "${bucketName}" was not found. Create that bucket in Supabase → Storage, or set NEXT_PUBLIC_LISTING_IMAGES_BUCKET to an existing bucket name, then restart.`
+        )
       }
 
       router.push('/owner/listings')

@@ -19,6 +19,14 @@ const DJANGO_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000
 
 const isBrowser = typeof window !== 'undefined'
 
+function shouldFallbackFromDjango(status: number | undefined): boolean {
+  if (status === undefined) return true
+  if (status === 0) return true
+  if (status === 404) return true
+  if (status >= 500) return true
+  return false
+}
+
 function toListingsQueryParams(filters?: ListingFilters): string {
   const params = new URLSearchParams()
   if (!filters) return params.toString()
@@ -188,10 +196,20 @@ export const getListings = async (filters?: ListingFilters): Promise<Listing[]> 
       max_surface: filters?.maxSurface,
     })
 
-    if (result.data?.results) {
-      return result.data.results.map(mapDjangoListing)
+    const data: any = result.data
+    if (data?.results && Array.isArray(data.results)) {
+      return data.results.map(mapDjangoListing)
     }
-    return []
+
+    if (Array.isArray(data)) {
+      return data.map(mapDjangoListing)
+    }
+
+    if (!result.data && shouldFallbackFromDjango((result as any).status)) {
+      // Fall through to Supabase proxy below.
+    } else {
+      return []
+    }
   }
 
   // Supabase DB access is proxied through Next.js API routes.
@@ -205,9 +223,12 @@ export const getListing = async (id: string): Promise<Listing> => {
   if (USE_DJANGO) {
     const result = await djangoApi.listingsApi.getListing(Number(id))
     if (result.data) {
-      return mapDjangoListing(result.data)
+      return mapDjangoListing(result.data as any)
     }
-    throw new Error('Listing not found')
+
+    if (!result.data && !shouldFallbackFromDjango((result as any).status)) {
+      throw new Error('Listing not found')
+    }
   }
 
   const data = await apiFetchJson<{ listing: Listing }>(
@@ -220,10 +241,16 @@ export const getListing = async (id: string): Promise<Listing> => {
 export const getFeaturedListings = async (): Promise<Listing[]> => {
   if (USE_DJANGO) {
     const result = await djangoApi.listingsApi.getFeaturedListings()
-    if (result.data) {
-      return (Array.isArray(result.data) ? result.data : []).map(mapDjangoListing)
+    const data: any = result.data
+    if (Array.isArray(data)) {
+      return data.map(mapDjangoListing)
     }
-    return []
+
+    if (!result.data && shouldFallbackFromDjango((result as any).status)) {
+      // Fall through to Supabase proxy below.
+    } else {
+      return []
+    }
   }
 
   const data = await apiFetchJson<{ listings: Listing[] }>('/api/listings')
@@ -233,10 +260,16 @@ export const getFeaturedListings = async (): Promise<Listing[]> => {
 export const getOwnerListings = async (ownerId: string): Promise<Listing[]> => {
   if (USE_DJANGO) {
     const result = await djangoApi.listingsApi.getMyListings()
-    if (result.data) {
-      return (Array.isArray(result.data) ? result.data : []).map(mapDjangoListing)
+    const data: any = result.data
+    if (Array.isArray(data)) {
+      return data.map(mapDjangoListing)
     }
-    return []
+
+    if (!result.data && shouldFallbackFromDjango((result as any).status)) {
+      // Fall through to Supabase proxy below.
+    } else {
+      return []
+    }
   }
 
   // Owner is derived from session cookies server-side.
@@ -248,10 +281,20 @@ export const getOwnerListings = async (ownerId: string): Promise<Listing[]> => {
 export const searchListings = async (query: string): Promise<Listing[]> => {
   if (USE_DJANGO) {
     const result = await djangoApi.listingsApi.getListings({ search: query })
-    if (result.data?.results) {
-      return result.data.results.map(mapDjangoListing)
+    const data: any = result.data
+    if (data?.results && Array.isArray(data.results)) {
+      return data.results.map(mapDjangoListing)
     }
-    return []
+
+    if (Array.isArray(data)) {
+      return data.map(mapDjangoListing)
+    }
+
+    if (!result.data && shouldFallbackFromDjango((result as any).status)) {
+      // Fall through to Supabase proxy below.
+    } else {
+      return []
+    }
   }
 
   const data = await apiFetchJson<{ listings: Listing[] }>(

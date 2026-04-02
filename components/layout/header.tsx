@@ -27,17 +27,18 @@ import {
   Plus,
   LayoutDashboard,
   Globe,
-  Loader2,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/AuthProvider'
+import { useT } from '@/lib/i18n/use-t'
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [userRole, setUserRole] = useState<string | null>(null)
   const [userName, setUserName] = useState<string | null>(null)
-  const { user, loading, signOut } = useAuth()
+  const { user, loading, signOut, language, setLanguage } = useAuth()
   const router = useRouter()
+  const t = useT()
 
   useEffect(() => {
     setMounted(true)
@@ -97,14 +98,14 @@ export function Header() {
           <Button variant="ghost" asChild>
             <Link href="/search">
               <Search className="mr-2 h-4 w-4" />
-              Search
+              {t('common.search')}
             </Link>
           </Button>
           {user && isStudent && (
             <Button variant="ghost" asChild>
               <Link href="/favorites">
                 <Heart className="mr-2 h-4 w-4" />
-                Favorites
+                {t('common.favorites')}
               </Link>
             </Button>
           )}
@@ -112,7 +113,7 @@ export function Header() {
             <Button variant="ghost" asChild>
               <Link href="/messages">
                 <MessageCircle className="mr-2 h-4 w-4" />
-                Messages
+                {t('common.messages')}
               </Link>
             </Button>
           )}
@@ -120,7 +121,7 @@ export function Header() {
             <Button variant="ghost" asChild>
               <Link href="/owner/dashboard">
                 <Building2 className="mr-2 h-4 w-4" />
-                Dashboard
+                {t('common.dashboard')}
               </Link>
             </Button>
           )}
@@ -128,7 +129,7 @@ export function Header() {
             <Button variant="ghost" asChild>
               <Link href="/admin">
                 <LayoutDashboard className="mr-2 h-4 w-4" />
-                Admin
+                {t('common.admin')}
               </Link>
             </Button>
           )}
@@ -142,18 +143,22 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="hidden sm:flex">
                   <Globe className="h-4 w-4" />
-                  <span className="sr-only">Switch language</span>
+                  <span className="sr-only">{t('language.switch')}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>English</DropdownMenuItem>
-                <DropdownMenuItem>Francais</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => void setLanguage('en')}>
+                  {t('language.english')}{language === 'en' ? ' ✓' : ''}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => void setLanguage('fr')}>
+                  {t('language.french')}{language === 'fr' ? ' ✓' : ''}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Button variant="ghost" size="icon" className="hidden sm:flex" disabled>
               <Globe className="h-4 w-4" />
-              <span className="sr-only">Switch language</span>
+              <span className="sr-only">{t('language.switch')}</span>
             </Button>
           )}
 
@@ -166,7 +171,7 @@ export function Header() {
                 <Button asChild className="hidden sm:flex">
                   <Link href="/owner/listings/new">
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Listing
+                    {t('header.addListing')}
                   </Link>
                 </Button>
               )}
@@ -195,7 +200,7 @@ export function Header() {
                     <DropdownMenuItem asChild>
                       <Link href="/profile">
                         <User className="mr-2 h-4 w-4" />
-                        Profile
+                        {t('common.profile')}
                       </Link>
                     </DropdownMenuItem>
                     {isStudent && (
@@ -203,13 +208,13 @@ export function Header() {
                         <DropdownMenuItem asChild>
                           <Link href="/favorites">
                             <Heart className="mr-2 h-4 w-4" />
-                            Favorites
+                            {t('common.favorites')}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href="/bookings">
                             <Building2 className="mr-2 h-4 w-4" />
-                            My Bookings
+                            {t('header.myBookings')}
                           </Link>
                         </DropdownMenuItem>
                       </>
@@ -219,13 +224,13 @@ export function Header() {
                         <DropdownMenuItem asChild>
                           <Link href="/owner/dashboard">
                             <LayoutDashboard className="mr-2 h-4 w-4" />
-                            Dashboard
+                            {t('common.dashboard')}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href="/owner/listings">
                             <Building2 className="mr-2 h-4 w-4" />
-                            My Listings
+                            {t('header.myListings')}
                           </Link>
                         </DropdownMenuItem>
                       </>
@@ -233,13 +238,13 @@ export function Header() {
                     <DropdownMenuItem asChild>
                       <Link href="/settings">
                         <Settings className="mr-2 h-4 w-4" />
-                        Settings
+                        {t('common.settings')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="text-destructive cursor-pointer">
                       <LogOut className="mr-2 h-4 w-4" />
-                      Log out
+                      {t('common.logOut')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -254,10 +259,10 @@ export function Header() {
           ) : (
             <>
               <Button variant="ghost" asChild className="hidden sm:flex">
-                <Link href="/login">Log in</Link>
+                <Link href="/login">{t('common.logIn')}</Link>
               </Button>
               <Button asChild>
-                <Link href="/register">Sign up</Link>
+                <Link href="/register">{t('common.signUp')}</Link>
               </Button>
             </>
           )}

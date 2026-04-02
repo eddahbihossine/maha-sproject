@@ -20,9 +20,11 @@ import { useAuth } from '@/lib/auth/AuthProvider'
 import { apiFetchJson } from '@/lib/api/http'
 import type { Listing } from '@/lib/types'
 import type { SearchFilters as SearchFiltersType } from '@/lib/types'
+import { useT } from '@/lib/i18n/use-t'
 
 export default function SearchPage() {
   const { user } = useAuth()
+  const t = useT()
   const [filters, setFilters] = useState<SearchFiltersType>({})
   const [sortBy, setSortBy] = useState<string>('newest')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -176,12 +178,14 @@ export default function SearchPage() {
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                {loading ? 'Loading...' : `${filteredListings.length} accommodations found`}
+                {loading
+                  ? t('search.resultsTitleLoading')
+                  : t('search.resultsTitle', { count: filteredListings.length })}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {filters.city && filters.city !== 'all'
-                  ? `in ${filters.city}`
-                  : 'across Morocco'}
+                  ? t('search.inCity', { city: filters.city })
+                  : t('search.acrossMorocco')}
               </p>
             </div>
 
@@ -189,13 +193,13 @@ export default function SearchPage() {
               {/* Sort */}
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder={t('search.sortBy')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="newest">Newest First</SelectItem>
-                  <SelectItem value="price_asc">Price: Low to High</SelectItem>
-                  <SelectItem value="price_desc">Price: High to Low</SelectItem>
-                  <SelectItem value="popular">Most Popular</SelectItem>
+                  <SelectItem value="newest">{t('search.newestFirst')}</SelectItem>
+                  <SelectItem value="price_asc">{t('search.priceLowHigh')}</SelectItem>
+                  <SelectItem value="price_desc">{t('search.priceHighLow')}</SelectItem>
+                  <SelectItem value="popular">{t('search.mostPopular')}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -208,7 +212,7 @@ export default function SearchPage() {
                   onClick={() => setViewMode('grid')}
                 >
                   <LayoutGrid className="h-4 w-4" />
-                  <span className="sr-only">Grid view</span>
+                  <span className="sr-only">{t('search.gridView')}</span>
                 </Button>
                 <Button
                   variant={viewMode === 'list' ? 'secondary' : 'ghost'}
@@ -217,11 +221,11 @@ export default function SearchPage() {
                   onClick={() => setViewMode('list')}
                 >
                   <List className="h-4 w-4" />
-                  <span className="sr-only">List view</span>
+                  <span className="sr-only">{t('search.listView')}</span>
                 </Button>
                 <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
                   <Map className="h-4 w-4" />
-                  <span className="sr-only">Map view</span>
+                  <span className="sr-only">{t('search.mapView')}</span>
                 </Button>
               </div>
             </div>
@@ -262,12 +266,11 @@ export default function SearchPage() {
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                 <Home className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h2 className="mb-2 text-xl font-semibold">No listings found</h2>
+              <h2 className="mb-2 text-xl font-semibold">{t('search.noListingsFound')}</h2>
               <p className="mb-4 max-w-md text-muted-foreground">
-                We could not find any accommodations matching your criteria. Try adjusting
-                your filters or search in a different area.
+                {t('search.noListingsFoundText')}
               </p>
-              <Button onClick={() => setFilters({})}>Clear all filters</Button>
+              <Button onClick={() => setFilters({})}>{t('search.clearAllFilters')}</Button>
             </div>
           )}
 
@@ -275,7 +278,7 @@ export default function SearchPage() {
           {filteredListings.length > 0 && (
             <div className="mt-8 text-center">
               <Button variant="outline" size="lg">
-                Load more listings
+                {t('search.loadMore')}
               </Button>
             </div>
           )}

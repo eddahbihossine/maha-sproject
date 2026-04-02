@@ -842,12 +842,12 @@ export const mockReports: Report[] = [
 
 // Popular cities for search
 export const popularCities = [
-  { name: 'Casablanca', listingCount: 342, image: 'https://images.unsplash.com/photo-1541323189084-21b22cda0d41?w=400&h=300&fit=crop' },
-  { name: 'Rabat', listingCount: 189, image: 'https://images.unsplash.com/photo-1607099040511-16f5a5c1f4c8?w=400&h=300&fit=crop' },
-  { name: 'Marrakech', listingCount: 156, image: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=400&h=300&fit=crop' },
-  { name: 'Tanger', listingCount: 134, image: 'https://images.unsplash.com/photo-1616419494384-7b0df0a1c02b?w=400&h=300&fit=crop' },
-  { name: 'Agadir', listingCount: 98, image: 'https://images.unsplash.com/photo-1564166824668-1bd6a08f1d71?w=400&h=300&fit=crop' },
-  { name: 'Fès', listingCount: 87, image: 'https://images.unsplash.com/photo-1549028268-7d4c3a9fd8f5?w=400&h=300&fit=crop' },
+  { name: 'Casablanca', listingCount: 342, image: '/cities/casablanca.jpg' },
+  { name: 'Rabat', listingCount: 189, image: '/cities/rabat.jpg' },
+  { name: 'Marrakech', listingCount: 156, image: '/cities/marrakech.jpg' },
+  { name: 'Tanger', listingCount: 134, image: '/cities/tanger.jpg' },
+  { name: 'Agadir', listingCount: 98, image: '/cities/agadir.jpg' },
+  { name: 'Fès', listingCount: 87, image: '/cities/fes.jpg' },
 ]
 
 // Amenities list

@@ -3,9 +3,23 @@ from .models import Listing, ListingImage
 
 
 class ListingImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = ListingImage
         fields = ['id', 'image', 'alt_text', 'sort_order', 'is_primary', 'created_at']
+
+    def get_image(self, obj):
+        if not getattr(obj, 'image', None):
+            return ''
+        try:
+            url = obj.image.url
+        except Exception:
+            return ''
+        request = self.context.get('request')
+        if request is None:
+            return url
+        return request.build_absolute_uri(url)
 
 
 class ListingSerializer(serializers.ModelSerializer):

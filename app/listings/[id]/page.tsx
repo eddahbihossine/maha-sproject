@@ -11,6 +11,7 @@ import { startConversation } from '@/lib/api/messages'
 import { getListing } from '@/lib/api/adapter'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { ListingMap } from '@/components/listings/listing-map'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -57,6 +58,9 @@ import {
   Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatMoneyMad, formatShortDate } from '@/lib/i18n'
+import { useT } from '@/lib/i18n/use-t'
+import { useFavorites } from '@/lib/favorites'
 
 const propertyTypeLabels: Record<string, string> = {
   studio: 'Studio',
@@ -91,14 +95,15 @@ const getImageUrl = (image: any) => {
 export default function ListingDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, language } = useAuth()
+  const t = useT()
   const listingId = params.id as string
 
   const [listing, setListing] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
-  const [isFavorite, setIsFavorite] = useState(false)
+  const favorites = useFavorites()
   const [message, setMessage] = useState('')
   const [sendingMessage, setSendingMessage] = useState(false)
   const [messageDialogOpen, setMessageDialogOpen] = useState(false)
@@ -145,11 +150,7 @@ export default function ListingDetailPage() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    })
+    return formatShortDate(dateString, language, { day: 'numeric', month: 'long', year: 'numeric' })
   }
 
   const handleSendMessage = async () => {
@@ -163,7 +164,7 @@ export default function ListingDetailPage() {
 
     // Don't allow owners to message themselves
     if (user.id === listing.ownerId) {
-      alert("You can't message yourself!")
+      alert(t('listings.cantMessageYourself'))
       return
     }
 
@@ -187,9 +188,11 @@ export default function ListingDetailPage() {
       setMessageDialogOpen(false)
       router.push(messagePath)
     } else {
-      alert('Failed to send message. Please try again.')
+      alert(t('listings.failedToSendMessage'))
     }
   }
+
+  const isFavorite = favorites.isFavorite(String(listingId))
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -346,7 +349,7 @@ export default function ListingDetailPage() {
                 {/* House Rules */}
                 <Card className="mb-8">
                   <CardHeader>
-                    <CardTitle>House Rules</CardTitle>
+                    <CardTitle>{t('listings.houseRules')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -356,15 +359,15 @@ export default function ListingDetailPage() {
                         ) : (
                           <X className="h-4 w-4 text-destructive" />
                         )}
-                        <span className="text-sm">Smoking</span>
+                        <span className="text-sm">{t('listings.rules.smoking')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         {rules.pets ? (
-                          <CheckCircle className="h-4 w-4 text-accent" />
+                          alert(t('listings.failedToSendMessage'))
                         ) : (
                           <X className="h-4 w-4 text-destructive" />
                         )}
-                        <span className="text-sm">Pets</span>
+                        <span className="text-sm">{t('listings.rules.pets')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         {rules.couples ? (
@@ -372,7 +375,7 @@ export default function ListingDetailPage() {
                         ) : (
                           <X className="h-4 w-4 text-destructive" />
                         )}
-                        <span className="text-sm">Couples</span>
+                        <span className="text-sm">{t('listings.rules.couples')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         {rules.parties ? (
@@ -380,7 +383,7 @@ export default function ListingDetailPage() {
                         ) : (
                           <X className="h-4 w-4 text-destructive" />
                         )}
-                        <span className="text-sm">Parties</span>
+                        <span className="text-sm">{t('listings.rules.parties')}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -389,25 +392,15 @@ export default function ListingDetailPage() {
                 {/* Location & Transport */}
                 <Card className="mb-8">
                   <CardHeader>
-                    <CardTitle>Location & Transport</CardTitle>
+                    <CardTitle>{t('listings.locationTransport')}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {/* Map Placeholder */}
-                    <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center">
-                          <MapPin className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">
-                            Map view available after booking request
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <ListingMap latitude={listing.latitude} longitude={listing.longitude} />
 
                     {/* Nearby Transport */}
                     {listing.nearbyTransport.length > 0 && (
                       <div>
-                        <h4 className="mb-3 font-medium">Nearby Transport</h4>
+                        <h4 className="mb-3 font-medium">{t('listings.nearbyTransport')}</h4>
                         <div className="space-y-2">
                           {listing.nearbyTransport.map((transport, index) => (
                             <div
@@ -434,7 +427,7 @@ export default function ListingDetailPage() {
                     {/* Nearby Universities */}
                     {listing.nearbyUniversities.length > 0 && (
                       <div>
-                        <h4 className="mb-3 font-medium">Nearby Universities</h4>
+                        <h4 className="mb-3 font-medium">{t('listings.nearbyUniversities')}</h4>
                         <div className="space-y-2">
                           {listing.nearbyUniversities.map((uni, index) => (
                             <div
@@ -537,16 +530,16 @@ export default function ListingDetailPage() {
                     <CardContent className="p-6">
                       <div className="mb-4">
                         <p className="text-3xl font-bold text-primary">
-                          {listing.rentMonthly.toLocaleString('fr-MA')} MAD
+                          {formatMoneyMad(listing.rentMonthly, language)} MAD
                           <span className="text-base font-normal text-muted-foreground">
                             /month
                           </span>
                         </p>
                         {listing.chargesIncluded ? (
-                          <p className="text-sm text-accent">Charges included</p>
+                          <p className="text-sm text-accent">{t('listings.chargesIncluded')}</p>
                         ) : (
                           <p className="text-sm text-muted-foreground">
-                            + {listing.chargesAmount?.toLocaleString('fr-MA')} MAD charges
+                            + {formatMoneyMad(typeof listing.chargesAmount === 'number' ? listing.chargesAmount : 0, language)} MAD {t('listings.charges')}
                           </p>
                         )}
                       </div>
@@ -556,12 +549,12 @@ export default function ListingDetailPage() {
                           <DialogTrigger asChild>
                             <Button className="w-full" size="lg">
                               <MessageCircle className="mr-2 h-4 w-4" />
-                              Contact Owner
+                              {t('listings.contactOwner')}
                             </Button>
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Send a Message</DialogTitle>
+                              <DialogTitle>{t('listings.sendMessage')}</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4 pt-4">
                               <div className="flex items-center gap-3">
@@ -574,12 +567,12 @@ export default function ListingDetailPage() {
                                 <div>
                                   <p className="font-medium">{listing.ownerName}</p>
                                   <p className="text-sm text-muted-foreground">
-                                    Usually responds within 2 hours
+                                    {t('listings.usuallyResponds', { hours: 2 })}
                                   </p>
                                 </div>
                               </div>
                               <Textarea
-                                placeholder="Hi, I'm interested in your listing. Is it still available?"
+                                placeholder={t('listings.messagePlaceholder')}
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 rows={4}
@@ -592,17 +585,17 @@ export default function ListingDetailPage() {
                                 {sendingMessage ? (
                                   <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Sending...
+                                    {t('listings.sending')}
                                   </>
                                 ) : (
-                                  'Send Message'
+                                  t('listings.sendMessageCta')
                                 )}
                               </Button>
                             </div>
                           </DialogContent>
                         </Dialog>
                         <Button variant="outline" className="w-full bg-transparent" size="lg">
-                          Request Booking
+                          {t('listings.requestBooking')}
                         </Button>
                       </div>
 
@@ -610,7 +603,7 @@ export default function ListingDetailPage() {
                         <Button
                           variant="outline"
                           className="flex-1 bg-transparent"
-                          onClick={() => setIsFavorite(!isFavorite)}
+                          onClick={() => favorites.toggle(String(listingId))}
                         >
                           <Heart
                             className={cn(
@@ -618,11 +611,11 @@ export default function ListingDetailPage() {
                               isFavorite && 'fill-destructive text-destructive'
                             )}
                           />
-                          {isFavorite ? 'Saved' : 'Save'}
+                          {isFavorite ? t('favorites.saved') : t('favorites.save')}
                         </Button>
                         <Button variant="outline" className="flex-1 bg-transparent">
                           <Share2 className="mr-2 h-4 w-4" />
-                          Share
+                          {t('common.share')}
                         </Button>
                       </div>
                     </CardContent>
@@ -654,7 +647,7 @@ export default function ListingDetailPage() {
                       <div className="mb-4 space-y-2">
                         <div className="flex items-center gap-2 text-sm">
                           <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>Usually responds within 2 hours</span>
+                          <span>{t('listings.usuallyResponds', { hours: 2 })}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Star className="h-4 w-4 text-warning" />

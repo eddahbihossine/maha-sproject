@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Send, Loader2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n/use-t'
 
 interface OtherUserProfile {
   id: string
@@ -31,6 +32,7 @@ export default function ConversationPage({
   const resolvedParams = use(params)
   const { user } = useAuth()
   const router = useRouter()
+  const t = useT()
   
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [otherUser, setOtherUser] = useState<OtherUserProfile | null>(null)
@@ -160,9 +162,9 @@ export default function ConversationPage({
     return (
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-center">
-          <p className="text-muted-foreground mb-4">User not found</p>
+          <p className="text-muted-foreground mb-4">{t('messages.userNotFound')}</p>
           <Button onClick={() => router.push('/messages')}>
-            Back to Messages
+            {t('messages.backToMessages')}
           </Button>
         </div>
       </div>
@@ -201,7 +203,7 @@ export default function ConversationPage({
         <div className="space-y-4">
           {messages.length === 0 ? (
             <div className="text-center text-muted-foreground py-12">
-              <p>No messages yet. Start the conversation!</p>
+              <p>{t('messages.noMessagesYet')}</p>
             </div>
           ) : (
             messages.map((message) => {
@@ -252,7 +254,7 @@ export default function ConversationPage({
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type a message..."
+            placeholder={t('messages.typeMessage')}
             disabled={sending}
             className="flex-1"
           />

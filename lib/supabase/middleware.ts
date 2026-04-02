@@ -21,25 +21,34 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next({ request })
   }
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  // If env vars are missing in the deployment, never hard-crash middleware.
+  // Treat the user as unauthenticated for protected routes.
+  if (!supabaseUrl || !supabaseAnonKey) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('redirectTo', pathname)
+    return NextResponse.redirect(url)
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  let supabase:
+    | ReturnType<typeof createServerClient>
+    | null = null
+  try {
+    supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          supabaseResponse = NextResponse.next({
-            request,
-          })
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -52,8 +61,10 @@ export async function updateSession(request: NextRequest) {
         detectSessionInUrl: false,
         persistSession: false,
       },
-    }
-  )
+    })
+  } catch {
+    supabase = null
+  }
 
   // IMPORTANT: Avoid writing any logic between createServerClient and
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
@@ -61,6 +72,10 @@ export async function updateSession(request: NextRequest) {
 
   let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null
   try {
+    if (!supabase) {
+      throw new Error('Supabase client not available')
+    }
+
     const {
       data: { user: loadedUser },
     } = await supabase.auth.getUser()

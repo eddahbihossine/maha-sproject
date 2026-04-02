@@ -1,6 +1,29 @@
 import { createClient } from './client'
 
-const BUCKET_NAME = 'listing-images'
+export const LISTING_IMAGES_BUCKET =
+  (process.env.NEXT_PUBLIC_LISTING_IMAGES_BUCKET || '').trim() || 'listing-images'
+
+export function getListingImagesBucketName(): string {
+  return LISTING_IMAGES_BUCKET
+}
+
+function extractBucketAndPathFromUrl(publicUrl: string): { bucket: string; path: string } | null {
+  // Common Supabase public/signed URL formats
+  const patterns: RegExp[] = [
+    /\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/,
+    /\/storage\/v1\/object\/sign\/([^/]+)\/(.+)$/,
+    /\/storage\/v1\/s3\/([^/]+)\/(.+)$/,
+  ]
+
+  for (const pattern of patterns) {
+    const match = publicUrl.match(pattern)
+    if (match?.[1] && match?.[2]) {
+      return { bucket: match[1], path: match[2] }
+    }
+  }
+
+  return null
+}
 
 /**
  * Upload a file to Supabase Storage
@@ -19,7 +42,7 @@ export async function uploadListingImage(file: File, listingId: string): Promise
 
   // Upload file
   const { data, error } = await supabase.storage
-    .from(BUCKET_NAME)
+    .from(LISTING_IMAGES_BUCKET)
     .upload(fileName, file, {
       cacheControl: '3600',
       upsert: false,
@@ -35,7 +58,7 @@ export async function uploadListingImage(file: File, listingId: string): Promise
 
   // Get public URL
   const { data: publicUrlData } = supabase.storage
-    .from(BUCKET_NAME)
+    .from(LISTING_IMAGES_BUCKET)
     .getPublicUrl(data.path)
 
   return publicUrlData.publicUrl
@@ -47,14 +70,17 @@ export async function uploadListingImage(file: File, listingId: string): Promise
  */
 export async function deleteListingImage(publicUrl: string): Promise<void> {
   const supabase = createClient()
-  
-  // Extract file path from public URL
-  const urlParts = publicUrl.split('/')
-  const filePath = urlParts.slice(urlParts.indexOf(BUCKET_NAME) + 1).join('/')
 
-  const { error } = await supabase.storage
-    .from(BUCKET_NAME)
-    .remove([filePath])
+  const extracted = extractBucketAndPathFromUrl(publicUrl)
+  const bucket = extracted?.bucket || LISTING_IMAGES_BUCKET
+  const filePath = extracted?.path
+
+  if (!filePath) {
+    console.error('Failed to delete file: could not parse storage path from URL')
+    return
+  }
+
+  const { error } = await supabase.storage.from(bucket).remove([filePath])
 
   if (error) {
     console.error(`Failed to delete file: ${error.message}`)
@@ -69,7 +95,7 @@ export async function deleteListingImages(listingId: string): Promise<void> {
   const supabase = createClient()
   
   const { data, error: listError } = await supabase.storage
-    .from(BUCKET_NAME)
+    .from(LISTING_IMAGES_BUCKET)
     .list(listingId)
 
   if (listError) {
@@ -81,7 +107,7 @@ export async function deleteListingImages(listingId: string): Promise<void> {
     const filePaths = data.map((file) => `${listingId}/${file.name}`)
     
     const { error: deleteError } = await supabase.storage
-      .from(BUCKET_NAME)
+      .from(LISTING_IMAGES_BUCKET)
       .remove(filePaths)
 
     if (deleteError) {

@@ -19,6 +19,10 @@ import {
 } from 'lucide-react'
 import type { Listing } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/lib/auth/AuthProvider'
+import { formatMoneyMad, formatShortDate } from '@/lib/i18n'
+import { useT } from '@/lib/i18n/use-t'
+import { useFavorites } from '@/lib/favorites'
 
 interface ListingCardProps {
   listing: any // Accept both old and new format
@@ -41,8 +45,15 @@ export function ListingCard({
   onToggleFavorite,
   variant = 'default',
 }: ListingCardProps) {
+  const { language, user } = useAuth()
+  const t = useT()
+  const favorites = useFavorites()
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
+
+  const userRole = user?.user_metadata?.role || 'student'
+  const canFavorite = Boolean(user) && userRole === 'student'
+  const effectiveIsFavorite = onToggleFavorite ? isFavorite : favorites.isFavorite(listing.id)
 
   // Handle both new API format (property_type) and old format (propertyType)
   const propertyType = listing.property_type || listing.propertyType
@@ -77,7 +88,12 @@ export function ListingCard({
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    onToggleFavorite?.(listing.id)
+    if (!canFavorite) return
+    if (onToggleFavorite) {
+      onToggleFavorite(listing.id)
+    } else {
+      favorites.toggle(listing.id)
+    }
   }
 
   if (variant === 'horizontal') {
@@ -99,17 +115,17 @@ export function ListingCard({
                   Verified
                 </Badge>
               )}
-              {onToggleFavorite && (
+              {canFavorite && (
                 <Button
                   variant="ghost"
                   size="icon"
                   className={cn(
                     'absolute right-2 top-2 h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm',
-                    isFavorite && 'text-destructive'
+                    effectiveIsFavorite && 'text-destructive'
                   )}
                   onClick={handleFavoriteClick}
                 >
-                  <Heart className={cn('h-4 w-4', isFavorite && 'fill-current')} />
+                  <Heart className={cn('h-4 w-4', effectiveIsFavorite && 'fill-current')} />
                 </Button>
               )}
             </div>
@@ -127,8 +143,8 @@ export function ListingCard({
                     </h3>
                   </div>
                   <p className="text-lg font-bold text-primary">
-                    {rentMonthly.toLocaleString('fr-MA')} MAD
-                    <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                    {formatMoneyMad(rentMonthly, language)} MAD
+                    <span className="text-sm font-normal text-muted-foreground">{t('listings.perMonthShort')}</span>
                   </p>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -148,7 +164,7 @@ export function ListingCard({
                   {surfaceArea} m²
                 </span>
                 <span>
-                  Available {new Date(availableFrom).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
+                  {t('listings.available', { date: formatShortDate(availableFrom, language) })}
                 </span>
               </div>
             </CardContent>
@@ -222,17 +238,17 @@ export function ListingCard({
           </div>
 
           {/* Favorite Button */}
-          {onToggleFavorite && (
+          {canFavorite && (
             <Button
               variant="ghost"
               size="icon"
               className={cn(
                 'absolute right-2 top-2 h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm transition-colors',
-                isFavorite && 'text-destructive'
+                effectiveIsFavorite && 'text-destructive'
               )}
               onClick={handleFavoriteClick}
             >
-              <Heart className={cn('h-4 w-4', isFavorite && 'fill-current')} />
+              <Heart className={cn('h-4 w-4', effectiveIsFavorite && 'fill-current')} />
             </Button>
           )}
         </div>
@@ -242,8 +258,8 @@ export function ListingCard({
           <div className="mb-2 flex items-start justify-between gap-2">
             <Badge variant="secondary">{propertyTypeLabels[propertyType]}</Badge>
               <p className="text-lg font-bold text-primary">
-              {rentMonthly.toLocaleString('fr-MA')} MAD
-              <span className="text-sm font-normal text-muted-foreground">/mo</span>
+              {formatMoneyMad(rentMonthly, language)} MAD
+              <span className="text-sm font-normal text-muted-foreground">{t('listings.perMonthShort')}</span>
             </p>
           </div>
 

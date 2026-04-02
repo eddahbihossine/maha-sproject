@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useAuth } from '@/lib/auth/AuthProvider'
 import { getConversations } from '@/lib/api/messages'
 import { apiFetchJson } from '@/lib/api/http'
+import { formatMoneyMad } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -61,7 +62,7 @@ interface Booking {
 }
 
 export default function OwnerDashboardPage() {
-  const { user } = useAuth()
+  const { user, language } = useAuth()
   const [loading, setLoading] = useState(true)
   const [listings, setListings] = useState<Listing[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -381,7 +382,7 @@ export default function OwnerDashboardPage() {
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {listing.city} - {listing.rent_monthly?.toLocaleString('fr-MA') || 0} MAD/month
+                    {listing.city} - {formatMoneyMad(listing.rent_monthly || 0, language)} MAD/month
                   </p>
                   <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">

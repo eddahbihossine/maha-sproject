@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/AuthProvider'
-import { uploadListingImage } from '@/lib/supabase/storage'
+import { getListingImagesBucketName, uploadListingImage } from '@/lib/supabase/storage'
 import { apiFetchJson } from '@/lib/api/http'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,6 +18,9 @@ export default function NewListingPage() {
   const { user } = useAuth()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const bucketName = getListingImagesBucketName()
+  const userRole = (user?.user_metadata?.role || 'student').toString()
+  const isOwner = userRole === 'owner' || userRole === 'admin'
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<Record<number, number>>({})
@@ -43,7 +46,15 @@ export default function NewListingPage() {
   })
 
   const handleSubmit = async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      alert('Please log in first.')
+      return
+    }
+
+    if (!isOwner) {
+      alert('Only owner accounts can create listings.')
+      return
+    }
 
     const missing: string[] = []
     if (!form.title.trim()) missing.push('Title')
@@ -126,7 +137,7 @@ export default function NewListingPage() {
               console.warn('Storage bucket not found - images cannot be uploaded yet')
             } else if (errMsg.includes('RLS policies')) {
               console.warn('Storage bucket RLS policies block uploads - please configure permissions')
-              alert('Storage bucket needs permission setup. Go to Supabase → Storage → listing-images → Policies and allow authenticated uploads.')
+              alert(`Storage bucket needs permission setup. Go to Supabase → Storage → ${bucketName} → Policies and allow authenticated uploads.`)
             } else {
               console.error(`Failed to upload image ${i}:`, err)
             }
@@ -134,21 +145,24 @@ export default function NewListingPage() {
         }
 
         if (imageRows.length > 0) {
-          await apiFetchJson<{ listing: any }>(
-            `/api/owner/listings/${encodeURIComponent(String(listingId))}`,
-            {
+          try {
+            await apiFetchJson(`/api/owner/listings/${listingId}`, {
               method: 'PATCH',
               body: JSON.stringify({ images: imageRows }),
-            }
-          ).catch((err) => {
-            console.error('Image save error:', err)
-          })
+            })
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err)
+            console.error('Image save error:', msg)
+            alert(`Listing created, but images failed to save: ${msg}`)
+          }
         }
         
         setUploading(false)
         
         if (bucketNotFound) {
-          alert('Listing created! Note: Image uploads are not yet configured. Please set up Supabase Storage bucket "listing-images" to enable image uploads.')
+          alert(
+            `Listing created! Image uploads failed because the Supabase Storage bucket "${bucketName}" was not found. Create that bucket in Supabase → Storage, or set NEXT_PUBLIC_LISTING_IMAGES_BUCKET to an existing bucket name, then restart.`
+          )
         }
       }
 
@@ -190,6 +204,13 @@ export default function NewListingPage() {
           <CardTitle>Add Listing</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {!isOwner && (
+            <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+              You are currently logged in as <span className="font-semibold">{userRole}</span>. Only
+              owner accounts can create listings.
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
             <Input id="title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />

@@ -14,7 +14,7 @@ export async function GET() {
   }
 
   const userRole = user.user_metadata?.role
-  if (userRole !== 'owner') {
+  if (userRole !== 'owner' && userRole !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   }
 
   const userRole = user.user_metadata?.role
-  if (userRole !== 'owner') {
+  if (userRole !== 'owner' && userRole !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

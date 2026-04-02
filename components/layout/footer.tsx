@@ -1,7 +1,13 @@
+'use client'
+
 import Link from 'next/link'
 import { Home, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react'
+import { useT } from '@/lib/i18n/use-t'
 
 export function Footer() {
+  const t = useT()
+  const year = new Date().getFullYear()
+
   return (
     <footer className="border-t bg-card">
       <div className="container mx-auto px-4 py-12">
@@ -15,8 +21,7 @@ export function Footer() {
               <span className="text-xl font-bold">SEMSARI.ma</span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Find your perfect student accommodation in Morocco. Verified listings, secure messaging,
-              and trusted owners.
+              {t('footer.tagline')}
             </p>
             <div className="flex gap-4">
               <Link href="#" className="text-muted-foreground hover:text-foreground">
@@ -40,31 +45,31 @@ export function Footer() {
 
           {/* For Students */}
           <div className="space-y-4">
-            <h3 className="font-semibold">For Students</h3>
+            <h3 className="font-semibold">{t('footer.forStudents')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/search" className="text-muted-foreground hover:text-foreground">
-                  Search Listings
+                  {t('footer.searchListings')}
                 </Link>
               </li>
               <li>
                 <Link href="/how-it-works" className="text-muted-foreground hover:text-foreground">
-                  How It Works
+                  {t('footer.howItWorks')}
                 </Link>
               </li>
               <li>
                 <Link href="/guides" className="text-muted-foreground hover:text-foreground">
-                  Student Guides
+                  {t('footer.studentGuides')}
                 </Link>
               </li>
               <li>
                 <Link href="/universities" className="text-muted-foreground hover:text-foreground">
-                  Universities
+                  {t('footer.universities')}
                 </Link>
               </li>
               <li>
                 <Link href="/faq" className="text-muted-foreground hover:text-foreground">
-                  FAQ
+                  {t('footer.faq')}
                 </Link>
               </li>
             </ul>
@@ -72,31 +77,31 @@ export function Footer() {
 
           {/* For Owners */}
           <div className="space-y-4">
-            <h3 className="font-semibold">For Owners</h3>
+            <h3 className="font-semibold">{t('footer.forOwners')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/owner/register" className="text-muted-foreground hover:text-foreground">
-                  List Your Property
+                  {t('footer.listYourProperty')}
                 </Link>
               </li>
               <li>
                 <Link href="/owner/how-it-works" className="text-muted-foreground hover:text-foreground">
-                  How It Works
+                  {t('footer.howItWorks')}
                 </Link>
               </li>
               <li>
                 <Link href="/owner/pricing" className="text-muted-foreground hover:text-foreground">
-                  Pricing
+                  {t('footer.pricing')}
                 </Link>
               </li>
               <li>
                 <Link href="/owner/resources" className="text-muted-foreground hover:text-foreground">
-                  Owner Resources
+                  {t('footer.ownerResources')}
                 </Link>
               </li>
               <li>
                 <Link href="/owner/support" className="text-muted-foreground hover:text-foreground">
-                  Support
+                  {t('footer.support')}
                 </Link>
               </li>
             </ul>
@@ -104,31 +109,31 @@ export function Footer() {
 
           {/* Company */}
           <div className="space-y-4">
-            <h3 className="font-semibold">Company</h3>
+            <h3 className="font-semibold">{t('footer.company')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/about" className="text-muted-foreground hover:text-foreground">
-                  About Us
+                  {t('footer.aboutUs')}
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="text-muted-foreground hover:text-foreground">
-                  Contact
+                  {t('common.contact')}
                 </Link>
               </li>
               <li>
                 <Link href="/careers" className="text-muted-foreground hover:text-foreground">
-                  Careers
+                  {t('footer.careers')}
                 </Link>
               </li>
               <li>
                 <Link href="/press" className="text-muted-foreground hover:text-foreground">
-                  Press
+                  {t('footer.press')}
                 </Link>
               </li>
               <li>
                 <Link href="/blog" className="text-muted-foreground hover:text-foreground">
-                  Blog
+                  {t('footer.blog')}
                 </Link>
               </li>
             </ul>
@@ -138,20 +143,20 @@ export function Footer() {
         {/* Bottom */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            2024 SEMSARI.ma. All rights reserved.
+            {t('footer.rights', { year })}
           </p>
           <div className="flex gap-6 text-sm">
             <Link href="/privacy" className="text-muted-foreground hover:text-foreground">
-              Privacy Policy
+              {t('footer.privacyPolicy')}
             </Link>
             <Link href="/terms" className="text-muted-foreground hover:text-foreground">
-              Terms of Service
+              {t('footer.termsOfService')}
             </Link>
             <Link href="/cookies" className="text-muted-foreground hover:text-foreground">
-              Cookie Policy
+              {t('footer.cookiePolicy')}
             </Link>
             <Link href="/gdpr" className="text-muted-foreground hover:text-foreground">
-              GDPR
+              {t('footer.gdpr')}
             </Link>
           </div>
         </div>

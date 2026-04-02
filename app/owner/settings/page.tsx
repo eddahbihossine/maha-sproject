@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { normalizeLanguage } from '@/lib/i18n'
 
 export default function OwnerSettingsPage() {
-  const { user } = useAuth()
+  const { user, setLanguage } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({
@@ -43,14 +45,18 @@ export default function OwnerSettingsPage() {
   const handleSave = async () => {
     if (!user?.id) return
     setSaving(true)
-    await apiFetchJson<{ ok: boolean }>('/api/profile', {
+    const preferred = normalizeLanguage(form.preferred_language)
+    const saved = await apiFetchJson<{ ok: boolean }>('/api/profile', {
       method: 'PATCH',
       body: JSON.stringify({
         company_name: form.company_name || null,
         phone_number: form.phone_number || null,
-        preferred_language: form.preferred_language || 'en',
+        preferred_language: preferred,
       }),
     }).catch(() => null)
+    if (saved?.ok) {
+      await setLanguage(preferred)
+    }
     setSaving(false)
   }
 
@@ -97,11 +103,18 @@ export default function OwnerSettingsPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="preferred_language">Preferred Language</Label>
-            <Input
-              id="preferred_language"
-              value={form.preferred_language}
-              onChange={(e) => setForm({ ...form, preferred_language: e.target.value })}
-            />
+            <Select
+              value={normalizeLanguage(form.preferred_language)}
+              onValueChange={(value) => setForm({ ...form, preferred_language: value })}
+            >
+              <SelectTrigger id="preferred_language">
+                <SelectValue placeholder="Select language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="fr">Français</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Button onClick={handleSave} disabled={saving}>
             {saving ? 'Saving...' : 'Save Changes'}
