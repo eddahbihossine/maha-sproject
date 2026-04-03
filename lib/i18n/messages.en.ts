@@ -76,6 +76,8 @@ export const messagesEn = {
     featuredSubtitle: 'Hand-picked accommodations for students',
     viewAll: 'View All',
     viewAllListings: 'View All Listings',
+    loginToViewListingsTitle: 'Sign in to view listings',
+    loginToViewListingsSubtitle: 'Create an account or sign in to browse available accommodations.',
     noListingsTitle: 'No listings yet',
     noListingsSubtitle: 'Check back soon for new properties',
     browseAllListings: 'Browse All Listings',

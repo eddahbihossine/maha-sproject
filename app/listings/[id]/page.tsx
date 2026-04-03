@@ -95,9 +95,16 @@ const getImageUrl = (image: any) => {
 export default function ListingDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { user, language } = useAuth()
+  const { user, language, loading: authLoading } = useAuth()
   const t = useT()
   const listingId = params.id as string
+
+  // Listings are private: redirect logged-out users.
+  useEffect(() => {
+    if (authLoading) return
+    if (user) return
+    router.push(`/login?redirectTo=/listings/${encodeURIComponent(listingId)}`)
+  }, [authLoading, user, router, listingId])
 
   const [listing, setListing] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -109,6 +116,9 @@ export default function ListingDetailPage() {
   const [messageDialogOpen, setMessageDialogOpen] = useState(false)
 
   useEffect(() => {
+    if (authLoading) return
+    if (!user) return
+
     const loadListing = async () => {
       try {
         const data = await getListing(listingId)
@@ -121,7 +131,7 @@ export default function ListingDetailPage() {
       }
     }
     loadListing()
-  }, [listingId])
+  }, [listingId, authLoading, user])
 
   if (loading || !listing) {
     return (

@@ -50,14 +50,29 @@ export default function HomePage() {
 
   // Load featured listings from database
   useEffect(() => {
+    if (loading) return
+
+    // Logged-out users should not see listings.
+    if (!user) {
+      setFeaturedListings([])
+      setListingsLoading(false)
+      return
+    }
+
     const loadListings = async () => {
       setListingsLoading(true)
-      const listings = await getFeaturedListings()
-      setFeaturedListings(listings.slice(0, 4))
-      setListingsLoading(false)
+      try {
+        const listings = await getFeaturedListings()
+        setFeaturedListings(listings.slice(0, 4))
+      } catch {
+        setFeaturedListings([])
+      } finally {
+        setListingsLoading(false)
+      }
     }
+
     loadListings()
-  }, [])
+  }, [user, loading])
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -159,8 +174,20 @@ export default function HomePage() {
               </Button>
             </div>
             
+            {/* Logged-out state */}
+            {!loading && !user && (
+              <div className="text-center py-12">
+                <Home className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">{t('home.loginToViewListingsTitle')}</h3>
+                <p className="text-muted-foreground mb-4">{t('home.loginToViewListingsSubtitle')}</p>
+                <Button asChild>
+                  <Link href="/login?redirectTo=/search">{t('auth.signIn')}</Link>
+                </Button>
+              </div>
+            )}
+
             {/* Loading State */}
-            {listingsLoading && (
+            {user && listingsLoading && (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {[...Array(4)].map((_, i) => (
                   <Card key={i}>
@@ -176,7 +203,7 @@ export default function HomePage() {
             )}
 
             {/* Listings */}
-            {!listingsLoading && featuredListings.length > 0 && (
+            {user && !listingsLoading && featuredListings.length > 0 && (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {featuredListings.map((listing) => (
                   <ListingCard key={listing.id} listing={listing} />
@@ -185,7 +212,7 @@ export default function HomePage() {
             )}
 
             {/* Empty State */}
-            {!listingsLoading && featuredListings.length === 0 && (
+            {user && !listingsLoading && featuredListings.length === 0 && (
               <div className="text-center py-12">
                 <Home className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">{t('home.noListingsTitle')}</h3>

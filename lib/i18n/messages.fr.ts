@@ -76,6 +76,9 @@ export const messagesFr = {
     featuredSubtitle: 'Une sélection de logements pour étudiants',
     viewAll: 'Voir tout',
     viewAllListings: 'Voir toutes les annonces',
+    loginToViewListingsTitle: 'Connectez-vous pour voir les annonces',
+    loginToViewListingsSubtitle:
+      'Créez un compte ou connectez-vous pour parcourir les logements disponibles.',
     noListingsTitle: "Pas d'annonces pour le moment",
     noListingsSubtitle: 'Revenez bientôt pour de nouveaux logements',
     browseAllListings: 'Parcourir toutes les annonces',

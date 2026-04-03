@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ListingCard } from '@/components/listings/listing-card'
@@ -23,7 +24,8 @@ import type { SearchFilters as SearchFiltersType } from '@/lib/types'
 import { useT } from '@/lib/i18n/use-t'
 
 export default function SearchPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const t = useT()
   const [filters, setFilters] = useState<SearchFiltersType>({})
   const [sortBy, setSortBy] = useState<string>('newest')
@@ -32,8 +34,18 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(true)
   const didPrefillBudgetRef = useRef(false)
 
+  // Listings are private: redirect logged-out users.
+  useEffect(() => {
+    if (authLoading) return
+    if (user) return
+    router.push('/login?redirectTo=/search')
+  }, [authLoading, user, router])
+
   // Load listings from database
   useEffect(() => {
+    if (authLoading) return
+    if (!user) return
+
     const loadListings = async () => {
       setLoading(true)
       const listings = await getListings()
@@ -41,7 +53,7 @@ export default function SearchPage() {
       setLoading(false)
     }
     loadListings()
-  }, [])
+  }, [authLoading, user])
 
   // Budget-based recommendation (minimal UX): prefill rent filters from student profile if empty
   useEffect(() => {
